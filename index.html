@@ -5,8 +5,6 @@
   <title>Create Booklet</title>
 </head>
 <body>
-<form action="https://booklet-1.onrender.com" method="post" enctype="multipart/form-data">
-
   <h2>Upload PDF to Create Booklet</h2>
   <form id="bookletForm" method="POST" enctype="multipart/form-data">
     <label>Select PDF: <input type="file" name="pdf" required></label><br><br>
@@ -14,6 +12,7 @@
     <label>To Page: <input type="number" name="to_page" min="1" required></label><br><br>
     <button type="submit">Generate Booklet</button>
   </form>
+
   <br>
   <div id="saveAsSection" style="display:none;">
     <h3>✅ Booklet generated! Save as:</h3>
@@ -21,42 +20,43 @@
     <label>Extension:
       <select id="extension">
         <option value="pdf">.pdf</option>
-        <option value="docx">.docx</option>
-        <option value="txt">.txt</option>
       </select>
     </label><br><br>
     <button onclick="downloadBooklet()">💾 Save As</button>
   </div>
-    <form action="https://booklet-1.onrender.com" method="post" enctype="multipart/form-data">
 
   <script>
-  const form = document.getElementById('bookletForm');
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
+    const form = document.getElementById('bookletForm');
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch("/", {
+      const formData = new FormData(form);
+      const response = await fetch('/', {
         method: 'POST',
         body: formData
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();  // Show full server response
-        alert("❌ Failed to create booklet:\n\n" + errorText);
-        return;
+      if (response.ok) {
+        const blob = await response.blob();
+        window.generatedBlob = blob;
+        document.getElementById('saveAsSection').style.display = 'block';
+      } else {
+        alert("❌ Failed to create booklet.");
       }
+    });
 
-      const blob = await response.blob();
-      window.generatedBlob = blob;
-      document.getElementById('saveAsSection').style.display = 'block';
+    function downloadBooklet() {
+      const name = document.getElementById('saveAsName').value || "booklet";
+      const ext = document.getElementById('extension').value;
+      const fileName = `${name}.${ext}`;
+      const url = URL.createObjectURL(window.generatedBlob);
 
-    } catch (err) {
-      alert("❌ Network or server error:\n" + err.message);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
     }
-  });
-</script>
-
+  </script>
 </body>
 </html>
